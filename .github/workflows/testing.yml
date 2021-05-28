@@ -2,7 +2,7 @@ name: Build ungoogled-chromium-archlinux for testing
 on:
     push:
         branches:
-            - '**'
+            - "**"
     pull_request:
 
 jobs:
@@ -259,6 +259,9 @@ jobs:
             - name: Load image
               if: ${{ join(needs.*.outputs.use-registry) == 'false' }}
               run: docker load < image
+            - name: Remove image
+              if: ${{ join(needs.*.outputs.use-registry) == 'false' }}
+              run: rm image
             - name: Download package
               uses: actions/download-artifact@v2
               with:
@@ -270,4 +273,11 @@ jobs:
                   --entrypoint /bin/bash
                   --mount type=bind,source="$(pwd)/package",target=/home/build/package
                   "${{ join(needs.*.outputs.image-tag) }}"
-                  -c 'sudo pacman -U /home/build/package --noconfirm && chromium --version'
+                  -c '
+                  sudo pacman -U /home/build/package --noconfirm
+                  chromium --version
+                  git clone https://github.com/web-platform-tests/wpt
+                  cd wpt
+                  sudo pacman -Syu --needed --noconfirm python python-pip python-virtualenv
+                  ./wpt make-hosts-file | sudo tee -a /etc/hosts
+                  ./wpt run --binary /usr/bin/chromium chrome'

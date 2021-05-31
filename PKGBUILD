@@ -186,6 +186,9 @@ build() {
     'use_custom_libcxx=false'
     'enable_widevine=true'
     'use_vaapi=true'
+    'blink_symbol_level=0'
+    'symbol_level=0'
+    'is_debug=false'
   )
 
   if [[ -n ${_system_libs[icu]+set} ]]; then
